@@ -12,10 +12,10 @@ inputs:
   version:
     description: >
       Version of datadog-ci to install.
-      Use "latest" (default) to always get the most recent release.
+      Use a major version like "v5" (default) to get the latest release within that major version.
       Use a specific tag like "v5.6.0" to pin.
     required: false
-    default: 'latest'
+    default: 'v5'
 
 outputs:
   version:

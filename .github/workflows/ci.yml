@@ -18,18 +18,18 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      # Test 1: Install with "latest"
-      - name: Install latest
+      # Test 1: Install with default version (v5)
+      - name: Install default version
         uses: ./
-        id: install-latest
+        id: install-default
 
-      - name: Verify latest install
+      - name: Verify default install
         shell: bash
         run: |
           datadog-ci version
-          echo "Installed version: ${{ steps.install-latest.outputs.version }}"
-          # Verify version output is not empty and starts with 'v'
-          [[ "${{ steps.install-latest.outputs.version }}" == v* ]]
+          echo "Installed version: ${{ steps.install-default.outputs.version }}"
+          # Verify version output is not empty and starts with 'v5.'
+          [[ "${{ steps.install-default.outputs.version }}" == v5.* ]]
 
       # Test 2: Install with a pinned version
       - name: Install pinned version

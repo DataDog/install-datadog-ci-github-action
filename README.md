@@ -25,7 +25,7 @@ steps:
 
 | Input | Description | Required | Default |
 |-------|-------------|----------|---------|
-| `version` | Version of datadog-ci to install. Use `"latest"` for the most recent release, or a specific tag like `"v5.6.0"` to pin. | No | `latest` |
+| `version` | Version of datadog-ci to install. Use a major version like `"v5"` to get the latest release within that major version, or a specific tag like `"v5.6.0"` to pin. | No | `v5` |
 
 ## Outputs
 

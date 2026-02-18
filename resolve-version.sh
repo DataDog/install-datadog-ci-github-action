@@ -7,22 +7,22 @@ set -euo pipefail
 
 requested_version="$1"
 
-if [[ "$requested_version" == "latest" ]]; then
-  # GitHub redirects /releases/latest → /releases/tag/vX.Y.Z
-  # We follow the redirect and extract the tag from the final URL.
-  # The response body is discarded (-o /dev/null); only the final URL is captured.
-  redirect_url=$(
-    curl -sSL -o /dev/null -w '%{url_effective}' \
-      "https://github.com/DataDog/datadog-ci/releases/latest"
+if [[ "$requested_version" =~ ^v?[0-9]+$ ]]; then
+  # Major version only (e.g., "v5" or "5") → resolve to the latest release within that major version.
+  major="${requested_version#v}"
+  resolved_version=$(
+    curl -sSL "https://api.github.com/repos/DataDog/datadog-ci/releases?per_page=100" | \
+      jq -r '.[] | select(.prerelease == false) | .tag_name' | \
+      grep "^v${major}\." | \
+      head -1
   )
-  resolved_version="${redirect_url##*/}"
 
-  if [[ -z "$resolved_version" || "$resolved_version" == "latest" ]]; then
-    echo "::error::Failed to resolve latest datadog-ci version from GitHub Releases."
+  if [[ -z "$resolved_version" ]]; then
+    echo "::error::Failed to resolve latest v${major}.x datadog-ci version from GitHub Releases."
     exit 1
   fi
 
-  echo "Resolved 'latest' → ${resolved_version}"
+  echo "Resolved 'v${major}' → ${resolved_version}"
 else
   resolved_version="$requested_version"
   echo "Using pinned version: ${resolved_version}"
