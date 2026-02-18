@@ -1,3 +1,7 @@
+# Unless explicitly stated otherwise all files in this repository are licensed
+# under the Apache License Version 2.0.
+# This product includes software developed at Datadog (https://www.datadoghq.com/)
+# Copyright 2024-present Datadog, Inc.
 name: CI
 on: [push, pull_request]
 
@@ -40,8 +44,8 @@ jobs:
           version=$(datadog-ci version)
           [[ "$version" == *"5.6.0"* ]]
 
-      # Test 3: Verify caching (second run should hit cache)
-      - name: Install same pinned version again (should cache-hit)
+      # Test 3: Verify re-installing the same version works
+      - name: Install same pinned version again
         uses: ./
         with:
           version: 'v5.6.0'

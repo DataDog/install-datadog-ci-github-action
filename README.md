@@ -44,12 +44,6 @@ steps:
 | macOS | ARM64 | `datadog-ci_darwin-arm64` |
 | Windows | X64 | `datadog-ci_win-x64` |
 
-## Caching
-
-The action uses `actions/cache` to cache the downloaded binary. The cache key is `datadog-ci-{version}-{runner.os}-{runner.arch}`.
-
-When using `version: latest`, the action first resolves "latest" to a concrete version tag, then uses that as the cache key. A new `datadog-ci` release naturally invalidates the cache.
-
 ## Checksum verification
 
 When available, the action verifies the downloaded binary against SHA-256 checksums published alongside the release assets. If the checksums file is not available (older releases), the action continues with a warning.
