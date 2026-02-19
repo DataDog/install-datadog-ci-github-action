@@ -36,6 +36,8 @@ runs:
     - name: Resolve version
       id: resolve-version
       shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
       run: bash "${{ github.action_path }}/resolve-version.sh" "${{ inputs.version }}"
 
     - name: Download datadog-ci

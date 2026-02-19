@@ -10,8 +10,14 @@ requested_version="$1"
 if [[ "$requested_version" =~ ^v?[0-9]+$ ]]; then
   # Major version only (e.g., "v5" or "5") → resolve to the latest release within that major version.
   major="${requested_version#v}"
+
+  curl_args=(-sSL)
+  if [[ -n "${GITHUB_TOKEN:-}" ]]; then
+    curl_args+=(-H "Authorization: token ${GITHUB_TOKEN}")
+  fi
+
   resolved_version=$(
-    curl -sSL "https://api.github.com/repos/DataDog/datadog-ci/releases?per_page=100" | \
+    curl "${curl_args[@]}" "https://api.github.com/repos/DataDog/datadog-ci/releases?per_page=100" | \
       jq -r '.[] | select(.prerelease == false) | .tag_name' | \
       grep "^v${major}\." | \
       head -1
