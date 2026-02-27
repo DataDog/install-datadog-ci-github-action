@@ -7,7 +7,7 @@ A GitHub Action that installs the [Datadog CI CLI](https://github.com/DataDog/da
 ```yaml
 steps:
   - name: Install datadog-ci
-    uses: DataDog/install-datadog-ci-action@v1
+    uses: DataDog/install-datadog-ci-github-action@v1
 
   - name: Use datadog-ci
     run: datadog-ci version
@@ -16,7 +16,7 @@ steps:
 ### Pin to a specific version
 
 ```yaml
-- uses: DataDog/install-datadog-ci-action@v1
+- uses: DataDog/install-datadog-ci-github-action@v1
   with:
     version: 'v5.6.0'
 ```
