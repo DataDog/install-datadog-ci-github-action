@@ -32,7 +32,7 @@ if [[ -z "$expected" ]]; then
 fi
 
 # Compute actual checksum (sha256sum is available on Linux, macOS, and Windows Git Bash)
-actual=$(sha256sum "$dest_file" | awk '{print $1}')
+actual=$(sha256sum "$dest_file" | awk '{print $1}' | tr -d '\\')
 
 if [[ "$expected" != "$actual" ]]; then
   echo "::error::Checksum mismatch for ${binary_name}. Expected: ${expected}, got: ${actual}. The binary may be corrupted or tampered with."
