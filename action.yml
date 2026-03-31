@@ -31,26 +31,26 @@ runs:
     - name: Resolve platform
       id: resolve-platform
       shell: bash
-      run: bash "${{ github.action_path }}/resolve-platform.sh"
+      run: bash "${GITHUB_ACTION_PATH}/resolve-platform.sh"
 
     - name: Resolve version
       id: resolve-version
       shell: bash
       env:
         GITHUB_TOKEN: ${{ github.token }}
-      run: bash "${{ github.action_path }}/resolve-version.sh" "${{ inputs.version }}"
+      run: bash "${GITHUB_ACTION_PATH}/resolve-version.sh" "${{ inputs.version }}"
 
     - name: Download datadog-ci
       shell: bash
       run: >
-        bash "${{ github.action_path }}/download.sh"
+        bash "${GITHUB_ACTION_PATH}/download.sh"
         "${{ steps.resolve-version.outputs.version }}"
         "${{ steps.resolve-platform.outputs.binary-name }}"
 
     - name: Verify checksum
       shell: bash
       run: >
-        bash "${{ github.action_path }}/verify-checksum.sh"
+        bash "${GITHUB_ACTION_PATH}/verify-checksum.sh"
         "${{ steps.resolve-version.outputs.version }}"
         "${{ steps.resolve-platform.outputs.binary-name }}"
 
