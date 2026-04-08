@@ -5,6 +5,9 @@
 # Copyright 2024-present Datadog, Inc.
 set -euo pipefail
 
+# shellcheck source=http.sh
+source "$(dirname "$0")/http.sh"
+
 version="$1"      # e.g. "v5.6.0"
 binary_name="$2"  # e.g. "datadog-ci_linux-x64" (remote asset name)
 
@@ -19,7 +22,7 @@ else
 fi
 
 echo "Downloading checksums from ${checksums_url}"
-if ! curl -L --fail --retry 3 --retry-delay 2 "$checksums_url" --output "$dest_dir/checksums.txt"; then
+if ! http_download "$checksums_url" "$dest_dir/checksums.txt"; then
   echo "::warning::Failed to download checksums file. Skipping checksum verification."
   exit 0
 fi
@@ -31,8 +34,15 @@ if [[ -z "$expected" ]]; then
   exit 0
 fi
 
-# Compute actual checksum (sha256sum is available on Linux, macOS, and Windows Git Bash)
-actual=$(sha256sum "$dest_file" | awk '{print $1}' | tr -d '\\')
+# Compute actual checksum
+if command -v sha256sum &>/dev/null; then
+  actual=$(sha256sum "$dest_file" | awk '{print $1}' | tr -d '\\')
+elif command -v shasum &>/dev/null; then
+  actual=$(shasum -a 256 "$dest_file" | awk '{print $1}')
+else
+  echo "::warning::Neither sha256sum nor shasum found. Skipping checksum verification."
+  exit 0
+fi
 
 if [[ "$expected" != "$actual" ]]; then
   echo "::error::Checksum mismatch for ${binary_name}. Expected: ${expected}, got: ${actual}. The binary may be corrupted or tampered with."

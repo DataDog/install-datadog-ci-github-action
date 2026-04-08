@@ -5,23 +5,26 @@
 # Copyright 2024-present Datadog, Inc.
 set -euo pipefail
 
+# shellcheck source=http.sh
+source "$(dirname "$0")/http.sh"
+
 requested_version="$1"
 
 if [[ "$requested_version" =~ ^v?[0-9]+$ ]]; then
   # Major version only (e.g., "v5" or "5") → resolve to the latest release within that major version.
   major="${requested_version#v}"
 
-  curl_args=(-sSL)
+  headers=()
   if [[ -n "${GITHUB_TOKEN:-}" ]]; then
-    curl_args+=(-H "Authorization: token ${GITHUB_TOKEN}")
+    headers+=("Authorization: token ${GITHUB_TOKEN}")
   fi
 
-  resolved_version=$(
-    curl "${curl_args[@]}" "https://api.github.com/repos/DataDog/datadog-ci/releases?per_page=100" | \
-      jq -r '.[] | select(.prerelease == false) | .tag_name' | \
-      grep "^v${major}\." | \
-      head -1
+  all_versions=$(
+    http_get "https://api.github.com/repos/DataDog/datadog-ci/releases?per_page=100" ${headers[@]+"${headers[@]}"} | \
+      awk '/"tag_name"/ { gsub(/.*"tag_name": "/, ""); gsub(/".*/, ""); tag = $0 }
+           /"prerelease": false/ { if (tag != "") { print tag; tag = "" } }'
   )
+  resolved_version=$(echo "$all_versions" | grep "^v${major}\." | head -1)
 
   if [[ -z "$resolved_version" ]]; then
     echo "::error::Failed to resolve latest v${major}.x datadog-ci version from GitHub Releases."
