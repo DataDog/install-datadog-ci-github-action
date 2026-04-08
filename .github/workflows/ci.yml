@@ -36,17 +36,17 @@ jobs:
         shell: sh
         run: apt-get update && apt-get install -y --no-install-recommends wget ca-certificates
 
-      - name: Install pinned version (wget-only container)
+      - name: Install latest major version (wget-only container)
         uses: ./
         id: install-wget
         with:
-          version: 'v5.6.0'
+          version: 'v5'
 
       - name: Verify install works with wget
         shell: bash
         run: |
           datadog-ci version
-          [[ "${{ steps.install-wget.outputs.version }}" == "v5.6.0" ]]
+          [[ "${{ steps.install-wget.outputs.version }}" =~ ^v5\. ]]
 
   test-install:
     strategy:
