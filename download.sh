@@ -5,6 +5,9 @@
 # Copyright 2024-present Datadog, Inc.
 set -euo pipefail
 
+# shellcheck source=http.sh
+source "${GITHUB_ACTION_PATH:-$(dirname "$0")}/http.sh"
+
 version="$1"      # e.g. "v5.6.0"
 binary_name="$2"  # e.g. "datadog-ci_linux-x64" (remote asset name, no .exe even for Windows)
 
@@ -21,7 +24,7 @@ else
 fi
 
 echo "Downloading ${url} → ${dest_file}"
-if ! curl -L --fail --retry 3 --retry-delay 2 "$url" --output "$dest_file"; then
+if ! http_download "$url" "$dest_file"; then
   echo "::error::Failed to download datadog-ci ${version}. Verify the version exists: https://github.com/DataDog/datadog-ci/releases/tag/${version}"
   exit 1
 fi

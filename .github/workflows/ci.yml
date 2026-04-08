@@ -25,6 +25,89 @@ jobs:
           datadog-ci version
           [[ "${{ steps.install-container.outputs.version }}" == "v5.6.0" ]]
 
+  test-install-container-wget:
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm-slim
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install wget (no curl in this image)
+        shell: sh
+        run: apt-get update && apt-get install -y --no-install-recommends wget ca-certificates
+
+      - name: Install latest major version (wget-only container)
+        uses: ./
+        id: install-wget
+        with:
+          version: 'v5'
+
+      - name: Verify install works with wget
+        shell: bash
+        run: |
+          datadog-ci version
+          [[ "${{ steps.install-wget.outputs.version }}" =~ ^v5\. ]]
+
+  test-resolve-version-jq:
+    name: "Resolve version (jq)"
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm-slim
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install curl and jq
+        shell: sh
+        run: apt-get update && apt-get install -y --no-install-recommends curl jq ca-certificates
+
+      - name: Verify jq is available
+        shell: bash
+        run: jq --version
+
+      - name: Install latest major version (jq path)
+        uses: ./
+        id: install
+        with:
+          version: 'v5'
+
+      - name: Verify resolved version
+        shell: bash
+        run: |
+          datadog-ci version
+          [[ "${{ steps.install.outputs.version }}" =~ ^v5\. ]]
+
+  test-resolve-version-awk:
+    name: "Resolve version (awk fallback)"
+    runs-on: ubuntu-latest
+    container:
+      image: debian:bookworm-slim
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install curl without jq
+        shell: sh
+        run: apt-get update && apt-get install -y --no-install-recommends curl ca-certificates
+
+      - name: Verify jq is NOT available
+        shell: bash
+        run: |
+          if command -v jq &>/dev/null; then
+            echo "::error::jq should not be installed for this test"
+            exit 1
+          fi
+
+      - name: Install latest major version (awk fallback path)
+        uses: ./
+        id: install
+        with:
+          version: 'v5'
+
+      - name: Verify resolved version
+        shell: bash
+        run: |
+          datadog-ci version
+          [[ "${{ steps.install.outputs.version }}" =~ ^v5\. ]]
+
   test-install:
     strategy:
       fail-fast: false
