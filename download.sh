@@ -6,7 +6,7 @@
 set -euo pipefail
 
 # shellcheck source=http.sh
-source "$(dirname "$0")/http.sh"
+source "${GITHUB_ACTION_PATH:-$(dirname "$0")}/http.sh"
 
 version="$1"      # e.g. "v5.6.0"
 binary_name="$2"  # e.g. "datadog-ci_linux-x64" (remote asset name, no .exe even for Windows)

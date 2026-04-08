@@ -6,7 +6,7 @@
 set -euo pipefail
 
 # shellcheck source=http.sh
-source "$(dirname "$0")/http.sh"
+source "${GITHUB_ACTION_PATH:-$(dirname "$0")}/http.sh"
 
 requested_version="$1"
 
