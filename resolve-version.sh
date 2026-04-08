@@ -19,11 +19,16 @@ if [[ "$requested_version" =~ ^v?[0-9]+$ ]]; then
     headers+=("Authorization: token ${GITHUB_TOKEN}")
   fi
 
-  all_versions=$(
-    http_get "https://api.github.com/repos/DataDog/datadog-ci/releases?per_page=100" ${headers[@]+"${headers[@]}"} | \
-      awk '/"tag_name"/ { gsub(/.*"tag_name": "/, ""); gsub(/".*/, ""); tag = $0 }
-           /"prerelease": false/ { if (tag != "") { print tag; tag = "" } }'
-  )
+  releases_json=$(http_get "https://api.github.com/repos/DataDog/datadog-ci/releases?per_page=100" ${headers[@]+"${headers[@]}"})
+
+  if command -v jq &>/dev/null; then
+    all_versions=$(echo "$releases_json" | jq -r '.[] | select(.prerelease == false) | .tag_name')
+  else
+    # Fallback: parse JSON with awk when jq is not available.
+    all_versions=$(echo "$releases_json" | \
+      awk '/"tag_name"/ { gsub(/.*"tag_name"[[:space:]]*:[[:space:]]*"/, ""); gsub(/".*/, ""); tag = $0 }
+           /"prerelease"[[:space:]]*:[[:space:]]*false/ { if (tag != "") { print tag; tag = "" } }')
+  fi
   resolved_version=$(echo "$all_versions" | grep "^v${major}\." | head -1)
 
   if [[ -z "$resolved_version" ]]; then
