@@ -23,11 +23,14 @@ _detect_http_cmd() {
   fi
 }
 
+# Detect early so the error message is visible even when functions are
+# called inside command substitutions (where exit/echo go to the subshell).
+_detect_http_cmd
+
 # http_get URL [HEADER...]
 # Performs an HTTP GET and outputs the response body to stdout.
 # Optional headers are passed as "Key: Value" strings.
 http_get() {
-  _detect_http_cmd
   local url="$1"
   shift
 
@@ -49,7 +52,6 @@ http_get() {
 # http_download URL FILE
 # Downloads a file with retries. Returns non-zero on failure.
 http_download() {
-  _detect_http_cmd
   local url="$1"
   local output="$2"
 
