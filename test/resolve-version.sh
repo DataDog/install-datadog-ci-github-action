@@ -331,6 +331,24 @@ test_reports_rate_limit_errors_cleanly() {
   pass "reports rate-limit errors cleanly"
 }
 
+test_reports_rate_limit_errors_cleanly_without_jq() {
+  local env_dir
+  env_dir=$(setup_env 0 1 0)
+
+  add_response "$env_dir" 1 403 0 '{"message":"API RATE LIMIT EXCEEDED"}'
+  add_response "$env_dir" 2 403 0 '{"message":"API RATE LIMIT EXCEEDED"}'
+  add_response "$env_dir" 3 403 0 '{"message":"API RATE LIMIT EXCEEDED"}'
+  add_response "$env_dir" 4 403 0 '{"message":"API RATE LIMIT EXCEEDED"}'
+
+  run_resolver "$env_dir" "v5"
+
+  assert_equals "$RUN_EXIT_CODE" "1" "resolver should fail after exhausting rate-limit retries without jq" || return
+  assert_contains "$RUN_LOG" "API RATE LIMIT EXCEEDED" "resolver should surface the GitHub API message without jq" || return
+  assert_contains "$RUN_LOG" "Retrying in 1s (attempt 2/4)." "resolver should retry rate-limit errors without jq" || return
+  assert_not_contains "$RUN_LOG" "awk: syntax error" "resolver should not use gawk-only syntax without jq" || return
+  pass "reports rate-limit errors cleanly without jq"
+}
+
 test_reports_unexpected_payload_shape_with_jq() {
   local env_dir
   env_dir=$(setup_env 1 1 0)
@@ -392,6 +410,7 @@ main() {
   test_resolves_latest_major_with_jq
   test_retries_server_errors_and_succeeds
   test_reports_rate_limit_errors_cleanly
+  test_reports_rate_limit_errors_cleanly_without_jq
   test_reports_unexpected_payload_shape_with_jq
   test_reports_unexpected_payload_shape_without_jq
   test_retries_with_wget_and_awk_fallback

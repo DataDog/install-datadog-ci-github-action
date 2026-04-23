@@ -50,8 +50,11 @@ json_error_message() {
   fi
 
   awk '
-    match($0, /"message"[[:space:]]*:[[:space:]]*"([^"]+)"/, matches) {
-      print matches[1]
+    /"message"[[:space:]]*:/ {
+      message_line = $0
+      sub(/.*"message"[[:space:]]*:[[:space:]]*"/, "", message_line)
+      sub(/".*/, "", message_line)
+      print message_line
       exit
     }
   ' "$response_file"
@@ -102,7 +105,9 @@ extract_release_versions() {
 
 should_retry_request() {
   local status_code="$1"
-  local error_message="${2,,}"
+  local error_message
+
+  error_message=$(printf '%s' "$2" | tr '[:upper:]' '[:lower:]')
 
   if [[ "$status_code" == "429" || "$status_code" =~ ^5[0-9][0-9]$ ]]; then
     return 0
