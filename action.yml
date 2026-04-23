@@ -9,6 +9,11 @@ branding:
   color: 'purple'
 
 inputs:
+  github-token:
+    description: >
+      Optional GitHub token used to authenticate GitHub Releases API lookups for floating major versions like "v5".
+      Defaults to github.token when not provided.
+    required: false
   version:
     description: >
       Version of datadog-ci to install.
@@ -37,7 +42,7 @@ runs:
       id: resolve-version
       shell: bash
       env:
-        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_TOKEN: ${{ inputs.github-token || github.token }}
       run: bash "${GITHUB_ACTION_PATH}/resolve-version.sh" "${{ inputs.version }}"
 
     - name: Download datadog-ci

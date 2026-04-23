@@ -49,6 +49,46 @@ http_get() {
   fi
 }
 
+# http_get_with_status OUTPUT URL [HEADER...]
+# Performs an HTTP GET, writes the response body to OUTPUT, and prints the
+# final HTTP status code to stdout.
+# Returns non-zero only on transport failures. HTTP error responses still
+# return zero so callers can inspect the response payload.
+http_get_with_status() {
+  local output="$1"
+  local url="$2"
+  shift 2
+
+  if [[ "$_HTTP_CMD" == "curl" ]]; then
+    local args=(-sS -L -o "$output" -w "%{http_code}")
+    for header in "$@"; do
+      args+=(-H "$header")
+    done
+    curl "${args[@]}" "$url"
+  else
+    local args=(--no-verbose --server-response --content-on-error -O-)
+    local headers_file
+    local status_code=""
+    local wget_exit_code=0
+
+    headers_file=$(mktemp)
+    for header in "$@"; do
+      args+=(--header="$header")
+    done
+
+    wget "${args[@]}" "$url" >"$output" 2>"$headers_file" || wget_exit_code=$?
+    status_code=$(awk '/^[[:space:]]*HTTP\// { status = $2 } END { print status }' "$headers_file")
+    rm -f "$headers_file"
+
+    if [[ -n "$status_code" ]]; then
+      printf '%s' "$status_code"
+      return 0
+    fi
+
+    return "$wget_exit_code"
+  fi
+}
+
 # http_download URL FILE
 # Downloads a file with retries. Returns non-zero on failure.
 http_download() {
