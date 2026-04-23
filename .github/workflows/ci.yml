@@ -108,6 +108,24 @@ jobs:
           datadog-ci version
           [[ "${{ steps.install.outputs.version }}" =~ ^v5\. ]]
 
+  test-resolve-version-error-handling:
+    name: "Resolve version error handling (${{ matrix.os }})"
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Verify jq is available
+        shell: bash
+        run: jq --version
+
+      - name: Run resolver unit tests
+        shell: bash
+        run: bash test/resolve-version.sh
+
   test-install:
     strategy:
       fail-fast: false
