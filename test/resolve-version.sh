@@ -10,6 +10,10 @@ TEST_TMP_DIRS=()
 TEST_FAILURES=0
 
 cleanup() {
+  if ((${#TEST_TMP_DIRS[@]} == 0)); then
+    return
+  fi
+
   for dir in "${TEST_TMP_DIRS[@]}"; do
     rm -rf "$dir"
   done
