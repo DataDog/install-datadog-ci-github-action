@@ -24,10 +24,20 @@ else
 fi
 
 echo "Downloading ${url} → ${dest_file}"
-if ! http_download "$url" "$dest_file"; then
-  echo "::error::Failed to download datadog-ci ${version}. Verify the version exists: https://github.com/DataDog/datadog-ci/releases/tag/${version}"
-  exit 1
-fi
+max_attempts=3
+attempt=0
+while true; do
+  attempt=$((attempt + 1))
+  if http_download "$url" "$dest_file"; then
+    break
+  fi
+  if [[ $attempt -ge $max_attempts ]]; then
+    echo "::error::Failed to download datadog-ci ${version} after ${max_attempts} attempts. Verify the version exists: https://github.com/DataDog/datadog-ci/releases/tag/${version}"
+    exit 1
+  fi
+  echo "Download attempt ${attempt} failed, retrying in 15s..."
+  sleep 15
+done
 
 if [[ "$RUNNER_OS" != "Windows" ]]; then
   chmod +x "$dest_file"
