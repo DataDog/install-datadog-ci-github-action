@@ -4,7 +4,9 @@
 
 This action follows [semantic versioning](https://semver.org/) with floating major version tags, as recommended by the [GitHub Actions toolkit](https://github.com/actions/toolkit/blob/master/docs/action-versioning.md#recommendations).
 
-Users reference the action by its major version (e.g., `uses: DataDog/install-datadog-ci-github-action@v1`), which always points to the latest `v1.x.y` release. The floating tag is updated automatically by the [release workflow](.github/workflows/release.yml).
+Users reference the action by its major version (e.g., `uses: DataDog/install-datadog-ci-github-action@v1`), which should point to the latest `v1.x.y` release.
+
+The [release workflow](.github/workflows/release.yml) creates the GitHub Release for each semver tag. The floating major tag is updated manually because Datadog's `Global Tag Protection (public repos)` ruleset protects refs such as `refs/tags/v1`. Updating a floating major tag requires force-updating a protected ref, and the default `GITHUB_TOKEN` used by GitHub Actions cannot bypass that ruleset. If automation attempts the update, GitHub rejects the push with `GH013: Repository rule violations found` and `Cannot update this protected ref`.
 
 ## Release Process
 
@@ -16,9 +18,18 @@ Users reference the action by its major version (e.g., `uses: DataDog/install-da
    ```
 3. The `release.yml` workflow will automatically:
    - Create a GitHub Release with auto-generated release notes.
-   - Update the floating major version tag (`v1`) to point to the new release.
 4. Verify the GitHub Release appears at https://github.com/DataDog/install-datadog-ci-github-action/releases.
-5. Optionally, run the smoke test workflow to validate the release.
+5. Update the floating major version tag manually with an account or token that can bypass the tag protection ruleset:
+   ```bash
+   git fetch origin --tags
+   git tag -f v1 v1.1.0
+   git push -f origin v1
+   ```
+6. Verify the floating major version tag points to the released tag:
+   ```bash
+   git ls-remote --tags origin v1 v1.1.0
+   ```
+7. Optionally, run the smoke test workflow to validate the release.
 
 ## Major Version Releases
 
@@ -32,7 +43,7 @@ Bump the major version when making breaking changes to:
 To release a new major version (e.g., `v2`):
 
 1. Follow the standard release process with the new major version tag (e.g., `v2.0.0`).
-2. The workflow will automatically create the new floating tag (`v2`).
+2. Manually create or update the new floating tag (`v2`) with an account or token that can bypass the tag protection ruleset.
 3. Update the `README.md` usage examples to reference the new major version.
 
 ## Hotfix Process
@@ -50,4 +61,9 @@ To patch an older major version:
    git tag v1.2.4
    git push origin v1.2.4
    ```
-4. The workflow will update the `v1` floating tag automatically.
+4. Manually update the `v1` floating tag with an account or token that can bypass the tag protection ruleset:
+   ```bash
+   git fetch origin --tags
+   git tag -f v1 v1.2.4
+   git push -f origin v1
+   ```
