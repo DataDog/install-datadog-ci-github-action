@@ -6,7 +6,7 @@ This action follows [semantic versioning](https://semver.org/) with floating maj
 
 Users reference the action by its major version (e.g., `uses: DataDog/install-datadog-ci-github-action@v1`), which should point to the latest `v1.x.y` release.
 
-The [release workflow](.github/workflows/release.yml) creates the GitHub Release for each semver tag. The floating major tag is updated manually because Datadog's `Global Tag Protection (public repos)` ruleset protects refs such as `refs/tags/v1`. Updating a floating major tag requires force-updating a protected ref, and the default `GITHUB_TOKEN` used by GitHub Actions cannot bypass that ruleset. If automation attempts the update, GitHub rejects the push with `GH013: Repository rule violations found` and `Cannot update this protected ref`.
+The [release workflow](.github/workflows/release.yml) creates the GitHub Release for each semver tag. The floating major tag is updated manually because major tags are protected from workflows that use the default `GITHUB_TOKEN`. Updating a floating major tag requires force-updating a protected ref, and workflows using `GITHUB_TOKEN` cannot bypass that protection. If automation attempts the update, GitHub rejects the push with `GH013: Repository rule violations found` and `Cannot update this protected ref`.
 
 ## Release Process
 
