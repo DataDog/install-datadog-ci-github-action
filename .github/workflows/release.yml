@@ -10,6 +10,8 @@ on:
 permissions:
   contents: write # Required for creating the GitHub Release
 jobs:
+  # TODO: Find a supported way to update the floating major tag automatically
+  # instead of requiring a manual protected-tag bypass after each release.
   release:
     runs-on: ubuntu-latest
     steps:
