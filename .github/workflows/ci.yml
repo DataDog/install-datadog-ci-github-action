@@ -76,9 +76,9 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Install bash
+      - name: Install dependencies
         shell: sh
-        run: apk add --no-cache bash
+        run: apk add --no-cache bash curl
 
       - name: Install on Alpine (happy path)
         uses: ./
@@ -99,9 +99,9 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Install bash
+      - name: Install dependencies
         shell: sh
-        run: apk add --no-cache bash
+        run: apk add --no-cache bash curl
 
       - name: Install on Alpine with pre-musl version (should fail)
         uses: ./
