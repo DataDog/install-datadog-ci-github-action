@@ -33,6 +33,11 @@ if [[ "$platform" == "win" && "$arch_suffix" == "arm64" ]]; then
   exit 1
 fi
 
+# Use Alpine (musl) binaries when running on Alpine Linux
+if [[ "$platform" == "linux" ]] && { [[ -f /etc/alpine-release ]] || ldd /bin/sh 2>&1 | grep -q musl; }; then
+  platform="alpine"
+fi
+
 # This is the remote asset name as uploaded to GitHub Releases.
 # Note: the Windows asset is uploaded as "datadog-ci_win-x64" (without .exe)
 # even though the local file produced by pkg has the .exe extension.
