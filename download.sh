@@ -13,7 +13,7 @@ if [[ "$binary_name" == datadog-ci_alpine-* ]]; then
   major=$(echo "$version" | sed 's/v\([0-9]*\).*/\1/')
   minor=$(echo "$version" | sed 's/v[0-9]*\.\([0-9]*\).*/\1/')
   if [[ "$major" -lt 5 || ( "$major" -eq 5 && "$minor" -lt 18 ) ]]; then
-    echo "::error::Alpine/musl binaries require datadog-ci >= v5.18.0 (got ${version}). Pin a newer version or set the platform input to 'linux' to use the glibc binary."
+    echo "::error::Alpine/musl binaries require datadog-ci >= v5.18.0 (got ${version}). Pin a newer version to proceed."
     exit 1
   fi
 fi
