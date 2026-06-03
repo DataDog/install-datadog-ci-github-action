@@ -68,3 +68,41 @@ jobs:
         uses: ./
         with:
           version: 'v5.6.0'
+
+  test-install-alpine:
+    runs-on: ubuntu-latest
+    container:
+      image: alpine:3.20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install on Alpine (happy path)
+        uses: ./
+        id: install-alpine
+        with:
+          version: 'v5.18.0'
+
+      - name: Verify install works on Alpine
+        shell: sh
+        run: |
+          datadog-ci version
+          [ "${{ steps.install-alpine.outputs.version }}" = "v5.18.0" ]
+
+  test-install-alpine-old-version:
+    runs-on: ubuntu-latest
+    container:
+      image: alpine:3.20
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install on Alpine with pre-musl version (should fail)
+        uses: ./
+        id: install-alpine-old
+        continue-on-error: true
+        with:
+          version: 'v5.17.0'
+
+      - name: Verify the step failed
+        shell: sh
+        run: |
+          [ "${{ steps.install-alpine-old.outcome }}" = "failure" ]
