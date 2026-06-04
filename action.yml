@@ -29,6 +29,9 @@ outputs:
   binary-path:
     description: 'Absolute path to the installed datadog-ci binary'
     value: ${{ steps.setup.outputs.binary-path }}
+  cache-hit:
+    description: "'true' if the binary was restored from cache; empty if it was downloaded from GitHub Releases"
+    value: ${{ steps.cache-restore.outputs.cache-hit }}
 
 runs:
   using: 'composite'
@@ -45,7 +48,23 @@ runs:
         GITHUB_TOKEN: ${{ inputs.github-token || github.token }}
       run: bash "${GITHUB_ACTION_PATH}/resolve-version.sh" "${{ inputs.version }}"
 
+    - name: Compute install directory
+      id: install-dir
+      shell: bash
+      run: |
+        install_dir="${RUNNER_TOOL_CACHE:-${HOME}/.datadog-ci}/datadog-ci/${{ steps.resolve-version.outputs.version }}"
+        echo "path=$install_dir" >> "$GITHUB_OUTPUT"
+
+    - name: Restore from cache
+      id: cache-restore
+      uses: actions/cache/restore@v4
+      continue-on-error: true
+      with:
+        path: ${{ steps.install-dir.outputs.path }}
+        key: datadog-ci-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve-version.outputs.version }}
+
     - name: Download datadog-ci
+      if: steps.cache-restore.outputs.cache-hit != 'true'
       shell: bash
       run: >
         bash "${GITHUB_ACTION_PATH}/download.sh"
@@ -53,17 +72,26 @@ runs:
         "${{ steps.resolve-platform.outputs.binary-name }}"
 
     - name: Verify checksum
+      if: steps.cache-restore.outputs.cache-hit != 'true'
       shell: bash
       run: >
         bash "${GITHUB_ACTION_PATH}/verify-checksum.sh"
         "${{ steps.resolve-version.outputs.version }}"
         "${{ steps.resolve-platform.outputs.binary-name }}"
 
+    - name: Save to cache
+      if: steps.cache-restore.outputs.cache-hit != 'true'
+      uses: actions/cache/save@v4
+      continue-on-error: true
+      with:
+        path: ${{ steps.install-dir.outputs.path }}
+        key: datadog-ci-${{ runner.os }}-${{ runner.arch }}-${{ steps.resolve-version.outputs.version }}
+
     - name: Add to PATH and verify
       id: setup
       shell: bash
       run: |
-        install_dir="${RUNNER_TOOL_CACHE:-${HOME}/.datadog-ci}/datadog-ci/${{ steps.resolve-version.outputs.version }}"
+        install_dir="${{ steps.install-dir.outputs.path }}"
         echo "$install_dir" >> "$GITHUB_PATH"
 
         # Determine the local binary name

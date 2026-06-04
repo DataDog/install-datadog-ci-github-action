@@ -34,6 +34,11 @@ steps:
 |--------|-------------|
 | `version` | The concrete version that was installed (e.g. `"v5.6.0"`) |
 | `binary-path` | Absolute path to the installed datadog-ci binary |
+| `cache-hit` | `"true"` if the binary was restored from cache; empty string if it was downloaded from GitHub Releases |
+
+## Caching
+
+The action caches the downloaded binary using [`actions/cache`](https://github.com/actions/cache), keyed on runner OS, architecture, and the resolved version. On a cache hit, the network download is skipped entirely. If the cache service is unavailable, the action transparently falls back to downloading directly from GitHub Releases. Cache write failures are non-fatal and produce a warning rather than failing the action.
 
 ## Supported platforms
 
