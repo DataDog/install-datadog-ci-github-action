@@ -193,6 +193,39 @@ jobs:
           datadog-ci version
           [ "${{ steps.install-alpine.outputs.version }}" = "v5.18.0" ]
 
+  test-cache:
+    name: "Cache hit / miss behavior"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # First install: cold cache (miss) or warm cache (hit from a previous run) — either way the binary must work
+      - name: Install pinned version (first time)
+        uses: ./
+        id: install-first
+        with:
+          version: 'v5.6.0'
+
+      - name: Verify first install
+        shell: bash
+        run: |
+          datadog-ci version
+          [[ "${{ steps.install-first.outputs.version }}" == "v5.6.0" ]]
+
+      # Second install: must always be a cache hit because either the first install just saved it
+      # or it was already present from a previous run
+      - name: Install same version again (must be cache hit)
+        uses: ./
+        id: install-second
+        with:
+          version: 'v5.6.0'
+
+      - name: Verify second install was a cache hit
+        shell: bash
+        run: |
+          datadog-ci version
+          [[ "${{ steps.install-second.outputs.cache-hit }}" == "true" ]]
+
   test-install-alpine-old-version:
     runs-on: ubuntu-latest
     container:
