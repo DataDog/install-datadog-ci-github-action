@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'datadog-ci version to test (e.g. "v5.7.0")'
+        description: 'datadog-ci version to test (v5.18.0 or newer for Alpine)'
         required: true
 
 jobs:
